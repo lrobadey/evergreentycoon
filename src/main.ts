@@ -70,6 +70,7 @@ const MS_PER_WEEK_AT_1X = 5000; // 1 week per 5 seconds at 1x speed
 // ============================================================================
 
 const state = createInitialState();
+state.running = false;
 let hoveredTileIdx: number | null = null;
 
 function idx(x: number, y: number, w: number): number {
@@ -114,6 +115,42 @@ function applySeasonTheme(): void {
 // ============================================================================
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
+
+// Start screen (glassmorphism overlay)
+const startScreen = document.createElement("div");
+startScreen.classList.add("startScreen");
+startScreen.setAttribute("role", "dialog");
+startScreen.setAttribute("aria-modal", "true");
+
+const startCard = document.createElement("div");
+startCard.classList.add("startCard");
+startScreen.appendChild(startCard);
+
+const startTitle = document.createElement("h1");
+startTitle.classList.add("startTitle");
+startTitle.textContent = "Evergreen Tycoon";
+startCard.appendChild(startTitle);
+
+const startSubtitle = document.createElement("p");
+startSubtitle.classList.add("startSubtitle");
+startSubtitle.textContent = "Build your winter tree haven.";
+startCard.appendChild(startSubtitle);
+
+const startButton = document.createElement("button");
+startButton.classList.add("btn");
+startButton.classList.add("btnPrimary");
+startButton.classList.add("startButton");
+startButton.textContent = "Start";
+startButton.onclick = () => {
+  state.running = true;
+  startScreen.classList.add("isHidden");
+  startScreen.setAttribute("aria-hidden", "true");
+  renderHud();
+  updateWeekProgressUi();
+};
+startCard.appendChild(startButton);
+
+app.appendChild(startScreen);
 
 // HUD Container (postcard header)
 const hud = document.createElement("header");
