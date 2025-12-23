@@ -486,6 +486,104 @@ body::before {
   opacity: 0.65;
 }
 
+.visitorBadge {
+  display: grid;
+  grid-template-columns: auto;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: var(--radius-lg);
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-card);
+  min-width: 240px;
+}
+
+.visitorBadgeTitle {
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted-text);
+}
+
+.visitorBadgeSummary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.visitorBadgeCount {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.visitorBadgeBar {
+  flex: 1 1 auto;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
+  overflow: hidden;
+}
+
+.visitorBadgeBarFill {
+  height: 100%;
+  width: 100%;
+  transform-origin: left;
+  transform: scaleX(0);
+  transition: transform 260ms ease;
+  background: linear-gradient(90deg, var(--accent-soft), var(--accent));
+  box-shadow: 0 0 12px var(--accent-soft);
+}
+
+.visitorBadgeExpected {
+  font-size: 11px;
+  color: var(--muted-text);
+  min-width: 120px;
+}
+
+.visitorFaces {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14px, 1fr));
+  gap: 6px 8px;
+  align-items: center;
+  min-height: 22px;
+}
+
+.visitorFace {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--glass-border-light);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35), 0 0 6px rgba(242, 195, 107, 0.35);
+  position: relative;
+}
+
+.visitorFace::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(242, 195, 107, 0.18), transparent 60%);
+  opacity: 0.8;
+}
+
+.visitorFacesEmpty {
+  grid-column: 1 / -1;
+  color: var(--muted-text);
+  font-size: 12px;
+}
+
+.visitorBadge.isFresh {
+  animation: visitorPulse 600ms ease;
+}
+
+@keyframes visitorPulse {
+  0% { box-shadow: 0 0 0 0 rgba(242, 195, 107, 0.5); }
+  100% { box-shadow: 0 0 0 18px rgba(242, 195, 107, 0); }
+}
+
 .hudDetails {
   margin-left: auto;
   position: relative;
