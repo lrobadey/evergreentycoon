@@ -52,6 +52,8 @@ export type WeeklyPrices = {
 export type WeeklyMarketReport = {
   date: Date;
   season: Season;
+  // Weeks since SIM_START_DATE at the time this report was generated.
+  weekIndex: number;
   visitors: number;
   treeIntents: number;
   treesSold: number;
@@ -69,6 +71,12 @@ export type WeeklyMarketReport = {
   attractionMult: number;
   reputation01: number; // 0..1 (post-update value)
   expectedVisitors: number; // lambda before sampling
+  // Debug/observability: makes the sim easier to reason about and reproduce.
+  debug?: {
+    runSeed: number;
+    weekSeed: number;
+    shockMult: number;
+  };
   experience: {
     decor01: number;
     stock01: number;
@@ -100,8 +108,6 @@ export type GameState = {
   // When rent was last charged (stored as the 1st of that month).
   lastRentPaymentDate: Date | null;
   rngSeed: number;
-  rngState: number;
   lastReport: WeeklyMarketReport | null;
 };
-
 

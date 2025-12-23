@@ -11,7 +11,7 @@ import {
 } from "../constants";
 import { computeCheer } from "../actions";
 import { getSeason } from "../seasons";
-import { rngNextFloat, rngNormal01, rngPoisson, type Rng } from "../rng";
+import { rngNextFloat, rngNormal01, rngPoisson, seedForWeek, type Rng } from "../rng";
 import type { GameState, SpeciesId, TreePatch, WeeklyMarketReport, WeeklyPrices } from "../types";
 import { attractionMultiplier, holidayDemand01, isTreeSeasonActive, reputationMultiplier } from "./market_math";
 
@@ -57,9 +57,12 @@ function weeklyShockMultiplier(rng: Rng): number {
   return clamp(shock, HOLIDAY_TUNING.weeklyShockMin, HOLIDAY_TUNING.weeklyShockMax);
 }
 
-export function systemMarket(state: GameState, prices: WeeklyPrices): WeeklyMarketReport {
+export function systemMarket(state: GameState, prices: WeeklyPrices, opts: { weekIndex: number }): WeeklyMarketReport {
   const season = getSeason(state.date);
-  const rng: Rng = { state: state.rngState >>> 0 };
+  // Deterministic within a run: all randomness for a given week is derived from (runSeed, weekIndex).
+  // This preserves "never the same" by default (runSeed is random per new game), while enabling replay via seed.
+  const weekSeed = seedForWeek(opts.weekIndex, state.rngSeed);
+  const rng: Rng = { state: weekSeed >>> 0 };
 
   const cheer = computeCheer(state.tiles);
   state.cheer = cheer;
@@ -200,12 +203,10 @@ export function systemMarket(state: GameState, prices: WeeklyPrices): WeeklyMark
   const alpha = 1 - Math.pow(0.5, 1 / hl);
   state.reputation01 = clamp(state.reputation01 + alpha * (experience01 - state.reputation01), 0, 1);
 
-  // Persist RNG
-  state.rngState = rng.state >>> 0;
-
   return {
     date: new Date(state.date),
     season,
+    weekIndex: opts.weekIndex,
     visitors,
     treeIntents,
     treesSold,
@@ -218,6 +219,11 @@ export function systemMarket(state: GameState, prices: WeeklyPrices): WeeklyMark
     attractionMult,
     reputation01: state.reputation01,
     expectedVisitors,
+    debug: {
+      runSeed: state.rngSeed >>> 0,
+      weekSeed: weekSeed >>> 0,
+      shockMult,
+    },
     experience: {
       decor01,
       stock01,
@@ -236,5 +242,4 @@ export function systemMarket(state: GameState, prices: WeeklyPrices): WeeklyMark
     },
   };
 }
-
 

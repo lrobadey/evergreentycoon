@@ -80,6 +80,11 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
+function formatSeed32(seed: number): string {
+  const s = (seed >>> 0).toString(16).padStart(8, "0");
+  return `0x${s}`;
+}
+
 function formatYearsFromWeeks(weeks: number): string {
   const years = weeks / 52;
   return `${years.toFixed(1)}y`;
@@ -237,6 +242,64 @@ detailsEl.addEventListener("toggle", () => {
 const weekEl = document.createElement("div");
 weekEl.classList.add("hudMeta");
 detailsBody.appendChild(weekEl);
+
+// Seed controls (debuggability without changing the default "never the same" behavior)
+const seedEl = document.createElement("div");
+seedEl.classList.add("hudMeta");
+detailsBody.appendChild(seedEl);
+
+const seedCopyBtn = document.createElement("button");
+seedCopyBtn.classList.add("btn");
+seedCopyBtn.textContent = "Copy seed";
+seedCopyBtn.onclick = async () => {
+  try {
+    await navigator.clipboard.writeText(String(state.rngSeed >>> 0));
+    showReceipt("Seed copied");
+  } catch {
+    showReceipt("Couldn't copy seed");
+  }
+};
+detailsBody.appendChild(seedCopyBtn);
+
+const seedSetBtn = document.createElement("button");
+seedSetBtn.classList.add("btn");
+seedSetBtn.textContent = "Set seed…";
+seedSetBtn.onclick = () => {
+  const raw = prompt("Enter a seed (0 to 4294967295):", String(state.rngSeed >>> 0));
+  if (raw === null) return;
+  const n = Number(raw);
+  if (!Number.isFinite(n)) {
+    showReceipt("Invalid seed");
+    return;
+  }
+  const nextSeed = (Math.floor(n) >>> 0) as number;
+  const next = createInitialState({ seed: nextSeed });
+  // Mutate in place so references (event handlers) stay valid.
+  state.date = next.date;
+  state.money = next.money;
+  state.speed = next.speed;
+  state.running = next.running;
+  state.gridW = next.gridW;
+  state.gridH = next.gridH;
+  state.tiles = next.tiles;
+  state.selectedTileIdx = next.selectedTileIdx;
+  state.cheer = next.cheer;
+  state.reputation01 = next.reputation01;
+  state.holidayVibe01 = next.holidayVibe01;
+  state.farmAttraction01 = next.farmAttraction01;
+  state.trends = next.trends;
+  state.lastRentPaymentDate = next.lastRentPaymentDate;
+  state.rngSeed = next.rngSeed;
+  state.lastReport = next.lastReport;
+
+  hoveredTileIdx = null;
+  accMs = 0;
+  pauseBtn.textContent = state.running ? "Pause" : "Play";
+  render();
+  updateWeekProgressUi();
+  showReceipt(`Seed set to ${formatSeed32(state.rngSeed)}`);
+};
+detailsBody.appendChild(seedSetBtn);
 
 const marketDetailsEl = document.createElement("div");
 marketDetailsEl.classList.add("hudMeta");
@@ -663,12 +726,16 @@ function renderHud(): void {
 
   const weeksSinceStart = getWeeksSinceStart(state.date);
   weekEl.textContent = `Week ${weeksSinceStart + 1}`;
+  seedEl.textContent = `Seed ${formatSeed32(state.rngSeed)}`;
 
   if (state.lastReport) {
     const cap = state.tiles.filter((t) => t.base.kind === "cocoa").length * COCOA_CAPACITY_PER_WEEK_PER_STAND;
+    const shock = state.lastReport.debug?.shockMult;
+    const mood = typeof shock === "number" ? ` · mood ×${shock.toFixed(2)}` : "";
     marketDetailsEl.textContent =
       `Last week — visitors ${state.lastReport.visitors}, trees sold ${state.lastReport.treesSold}, ` +
-      `cocoa ${state.lastReport.cocoaSold}/${cap}, revenue +$${state.lastReport.revenue.total}`;
+      `cocoa ${state.lastReport.cocoaSold}/${cap}, revenue +$${state.lastReport.revenue.total}` +
+      ` · expected ${state.lastReport.expectedVisitors.toFixed(1)}${mood}`;
   } else {
     marketDetailsEl.textContent = "Last week — (no market yet)";
   }
@@ -1794,5 +1861,4 @@ fetch("http://127.0.0.1:7242/ingest/b9508947-ae5c-4f6f-82d7-7b0f031dd08b", {
 
 render();
 requestAnimationFrame(gameLoop);
-
 

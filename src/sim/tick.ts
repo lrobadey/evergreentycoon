@@ -1,6 +1,6 @@
 import { GRID_H, GRID_W, RENT_MONTHLY, SIM_START_DATE, STARTING_MONEY } from "./constants";
 import { createEmptyTile, refreshCheer } from "./actions";
-import { addDays } from "./time";
+import { addDays, getWeeksSinceStart } from "./time";
 import type { GameState, WeeklyMarketReport } from "./types";
 import { systemGrowth } from "./systems/growth";
 import { systemPricing } from "./systems/pricing";
@@ -47,7 +47,6 @@ export function createInitialState(opts?: { seed?: number }): GameState {
     },
     lastRentPaymentDate: null,
     rngSeed: seed,
-    rngState: seed,
     lastReport: null,
   };
   refreshCheer(state);
@@ -57,6 +56,7 @@ export function createInitialState(opts?: { seed?: number }): GameState {
 export function tickWeek(state: GameState): WeeklyMarketReport {
   const prevDate = state.date;
   state.date = addDays(state.date, 7);
+  const weekIndex = getWeeksSinceStart(state.date);
 
   // --------------------------------------------------------------------------
   // Rent: charge when we enter a new month (recorded as the 1st of that month).
@@ -81,7 +81,7 @@ export function tickWeek(state: GameState): WeeklyMarketReport {
 
   systemGrowth(state);
   const prices = systemPricing(state);
-  const report = systemMarket(state, prices);
+  const report = systemMarket(state, prices, { weekIndex });
   // Attach rent info so the UI can show receipts without introducing a new event bus.
   report.rentPaid = rentPaid;
   report.rentPaymentDate = rentPaymentDate;
@@ -115,5 +115,4 @@ export function tickWeek(state: GameState): WeeklyMarketReport {
 
   return report;
 }
-
 

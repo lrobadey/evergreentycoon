@@ -79,6 +79,10 @@ Tree patches represent a block of **25 trees planted together** (same age). Once
 
 Economy should be deterministic and driven by game state + calendar time (no AI-driven randomness).
 
+### Determinism & debugging (practical note)
+By default, each new game starts with a random **seed**, so runs feel different.
+For tuning/debugging, the seed is shown in the HUD Details and can be copied or set to replay the same run.
+
 ### Visitor market (high level)
 - Weekly **visitor count** = baseline (season/week) × **cheer multiplier** × **mature-supply modifier**
 - **Tree-first** behavior: visitors attempt to buy **1 tree** from a mature patch; after purchase they may buy cocoa.
@@ -168,5 +172,4 @@ Good next steps once the foundation is solid:
 - Saving/loading via `localStorage`
 - Seasonal modifiers (growth rates, weather, operations)
 - Larger maps (chunking) after performance is proven
-
 
