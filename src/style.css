@@ -894,6 +894,90 @@ body::before {
   }
 }
 
+/* ========================================================================== */
+/* Start Screen                                                               */
+/* ========================================================================== */
+
+.startScreen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, rgba(6, 19, 14, 0.86), rgba(6, 19, 14, 0.6));
+  backdrop-filter: blur(16px);
+  z-index: 20;
+  transition: opacity 320ms ease, transform 320ms ease, visibility 320ms ease;
+}
+
+.startScreen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(900px 600px at 18% 18%, rgba(242, 195, 107, 0.18), transparent 60%),
+    radial-gradient(720px 520px at 82% 12%, rgba(234, 243, 240, 0.12), transparent 65%);
+  opacity: 0.9;
+}
+
+.startScreen.isHidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-10px);
+}
+
+.startCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 32px 40px;
+  border-radius: var(--radius-xl);
+  background: rgba(12, 30, 23, 0.68);
+  border: 1px solid var(--glass-border-light);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(var(--glass-blur));
+  text-align: center;
+  min-width: min(520px, 90vw);
+}
+
+.startCard::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  border: 1px solid var(--glass-border);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0));
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.85;
+}
+
+.startTitle {
+  font-size: clamp(2.6rem, 4vw, 3.4rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--snow-text);
+  text-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+.startSubtitle {
+  font-size: 1rem;
+  color: var(--muted-text);
+  letter-spacing: 0.02em;
+  margin-top: -4px;
+}
+
+.startButton {
+  align-self: center;
+  min-width: 200px;
+  font-size: 1.05rem;
+  padding: 14px 28px;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+}
+
 @media (max-width: 900px) {
   .hud {
     padding: 12px 12px 10px;
