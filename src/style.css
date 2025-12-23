@@ -982,3 +982,66 @@ body::before {
     will-change: auto;
   }
 }
+
+/* --- Start Screen --- */
+.startOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+
+  background:
+    radial-gradient(900px 520px at 50% 30%, rgba(255, 255, 255, 0.06), transparent 55%),
+    radial-gradient(700px 420px at 70% 65%, rgba(160, 255, 215, 0.05), transparent 60%),
+    rgba(6, 19, 14, 0.70);
+
+  backdrop-filter: blur(calc(var(--glass-blur) + 6px));
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 6px));
+}
+
+.startOverlay.isHidden {
+  display: none;
+}
+
+.startCard {
+  width: min(520px, 100%);
+  padding: 28px 26px 22px;
+  border-radius: calc(var(--radius-lg) + 4px);
+  border: 1px solid var(--glass-border);
+  border-top: 1px solid var(--glass-border-light);
+
+  background:
+    linear-gradient(135deg, var(--glass-highlight), transparent 42%),
+    linear-gradient(180deg, var(--glass-highlight-soft), transparent 70%),
+    rgba(14, 43, 32, 0.72);
+
+  box-shadow: 0 28px 85px rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+
+  text-align: center;
+}
+
+.startTitle {
+  font-family: "Libre Baskerville", ui-serif, Georgia, serif;
+  font-size: clamp(34px, 4.6vw, 52px);
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: rgba(234, 243, 240, 0.98);
+  text-shadow: 0 12px 45px rgba(0, 0, 0, 0.5);
+}
+
+.startSubtitle {
+  margin-top: 10px;
+  color: rgba(234, 243, 240, 0.78);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.startBtn {
+  margin-top: 18px;
+  padding: 12px 16px;
+  font-size: 14px;
+}

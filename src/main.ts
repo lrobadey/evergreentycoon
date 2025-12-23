@@ -70,6 +70,8 @@ const MS_PER_WEEK_AT_1X = 5000; // 1 week per 5 seconds at 1x speed
 // ============================================================================
 
 const state = createInitialState();
+// Start on a dedicated title screen; the player explicitly begins the sim.
+state.running = false;
 let hoveredTileIdx: number | null = null;
 
 function idx(x: number, y: number, w: number): number {
@@ -273,12 +275,14 @@ seedSetBtn.onclick = () => {
     return;
   }
   const nextSeed = (Math.floor(n) >>> 0) as number;
+  const wasRunning = state.running;
   const next = createInitialState({ seed: nextSeed });
   // Mutate in place so references (event handlers) stay valid.
   state.date = next.date;
   state.money = next.money;
   state.speed = next.speed;
-  state.running = next.running;
+  // Preserve whether the sim is running (seed changes shouldn't force play/pause).
+  state.running = wasRunning;
   state.gridW = next.gridW;
   state.gridH = next.gridH;
   state.tiles = next.tiles;
@@ -468,13 +472,61 @@ speeds.forEach((s) => {
 const pauseBtn = document.createElement("button");
 pauseBtn.classList.add("btn");
 pauseBtn.classList.add("btnPrimary");
-pauseBtn.textContent = "Pause";
+pauseBtn.textContent = state.running ? "Pause" : "Play";
 pauseBtn.onclick = () => {
   state.running = !state.running;
   pauseBtn.textContent = state.running ? "Pause" : "Play";
   renderHud();
 };
 hudControls.appendChild(pauseBtn);
+
+// Start screen overlay
+const startOverlay = document.createElement("div");
+startOverlay.classList.add("startOverlay");
+startOverlay.setAttribute("role", "dialog");
+startOverlay.setAttribute("aria-modal", "true");
+startOverlay.setAttribute("aria-label", "Start screen");
+app.appendChild(startOverlay);
+
+const startCard = document.createElement("div");
+startCard.classList.add("startCard");
+startOverlay.appendChild(startCard);
+
+const startTitle = document.createElement("div");
+startTitle.classList.add("startTitle");
+startTitle.textContent = "Evergreen Tycoon";
+startCard.appendChild(startTitle);
+
+const startSubtitle = document.createElement("div");
+startSubtitle.classList.add("startSubtitle");
+startSubtitle.textContent = "Build a Christmas tree farm worth traveling for.";
+startCard.appendChild(startSubtitle);
+
+const startBtn = document.createElement("button");
+startBtn.classList.add("btn", "btnPrimary", "startBtn");
+startBtn.textContent = "Start";
+startCard.appendChild(startBtn);
+
+function beginGame(): void {
+  startOverlay.classList.add("isHidden");
+  state.running = true;
+  pauseBtn.textContent = "Pause";
+  renderHud();
+  updateWeekProgressUi();
+  canvas.focus();
+}
+
+startBtn.onclick = beginGame;
+startOverlay.addEventListener("click", (e) => {
+  if (e.target === startOverlay) beginGame();
+});
+window.addEventListener("keydown", (e) => {
+  if (startOverlay.classList.contains("isHidden")) return;
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    beginGame();
+  }
+});
 
 // Step button
 const stepBtn = document.createElement("button");
@@ -497,6 +549,7 @@ app.appendChild(content);
 // Canvas
 const canvas = document.createElement("canvas");
 canvas.classList.add("farmCanvas");
+canvas.tabIndex = 0;
 content.appendChild(canvas);
 
 const ctx = canvas.getContext("2d")!;
@@ -1861,4 +1914,3 @@ fetch("http://127.0.0.1:7242/ingest/b9508947-ae5c-4f6f-82d7-7b0f031dd08b", {
 
 render();
 requestAnimationFrame(gameLoop);
-
