@@ -2,6 +2,12 @@ import type { Season } from "./types";
 
 const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000;
 
+function utcMidnightFromLocalDate(date: Date): number {
+  // Use the local calendar date, but compute the timestamp at UTC midnight for that date.
+  // This avoids DST-driven week drift when comparing local-midnight dates.
+  return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
 export function getSeason(date: Date): Season {
   const m = date.getMonth(); // 0=Jan ... 11=Dec
   if (m === 11 || m === 0 || m === 1) return "winter"; // Dec–Feb
@@ -31,7 +37,7 @@ export function getSeasonStart(date: Date): Date {
 
 export function getSeasonWeekIndex(date: Date): number {
   const start = getSeasonStart(date);
-  return Math.floor((date.getTime() - start.getTime()) / MS_PER_WEEK);
+  return Math.floor((utcMidnightFromLocalDate(date) - utcMidnightFromLocalDate(start)) / MS_PER_WEEK);
 }
 
 export function isChristmasPeriod(date: Date): boolean {
@@ -49,5 +55,4 @@ export function isChristmasPeriod(date: Date): boolean {
   
   return false;
 }
-
 
