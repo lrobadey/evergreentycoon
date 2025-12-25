@@ -73,6 +73,7 @@ const state = createInitialState();
 // Start on a dedicated title screen; the player explicitly begins the sim.
 state.running = false;
 let hoveredTileIdx: number | null = null;
+let previousVisitorCount: number | null = null;
 
 function idx(x: number, y: number, w: number): number {
   return y * w + x;
@@ -223,6 +224,42 @@ hudBottom.appendChild(weekProgressBarEl);
 const weekProgressFillEl = document.createElement("div");
 weekProgressFillEl.classList.add("hudWeekMeterFill");
 weekProgressBarEl.appendChild(weekProgressFillEl);
+
+// Visitors (visual)
+const visitorBadgeEl = document.createElement("div");
+visitorBadgeEl.classList.add("visitorBadge");
+hudBottom.appendChild(visitorBadgeEl);
+
+const visitorHeaderEl = document.createElement("div");
+visitorHeaderEl.classList.add("visitorBadgeTitle");
+visitorHeaderEl.textContent = "Visitors (last week)";
+visitorBadgeEl.appendChild(visitorHeaderEl);
+
+const visitorSummaryEl = document.createElement("div");
+visitorSummaryEl.classList.add("visitorBadgeSummary");
+visitorBadgeEl.appendChild(visitorSummaryEl);
+
+const visitorCountEl = document.createElement("div");
+visitorCountEl.classList.add("visitorBadgeCount");
+visitorSummaryEl.appendChild(visitorCountEl);
+
+const visitorBarEl = document.createElement("div");
+visitorBarEl.classList.add("visitorBadgeBar");
+visitorBarEl.setAttribute("role", "progressbar");
+visitorBarEl.setAttribute("aria-valuemin", "0");
+visitorSummaryEl.appendChild(visitorBarEl);
+
+const visitorBarFillEl = document.createElement("div");
+visitorBarFillEl.classList.add("visitorBadgeBarFill");
+visitorBarEl.appendChild(visitorBarFillEl);
+
+const visitorExpectedEl = document.createElement("div");
+visitorExpectedEl.classList.add("visitorBadgeExpected");
+visitorSummaryEl.appendChild(visitorExpectedEl);
+
+const visitorFacesEl = document.createElement("div");
+visitorFacesEl.classList.add("visitorFaces");
+visitorBadgeEl.appendChild(visitorFacesEl);
 
 // Details disclosure (tertiary info)
 const detailsEl = document.createElement("details");
@@ -714,6 +751,25 @@ function getCanvasTheme(): CanvasTheme {
 
 let receiptTimer: number | null = null;
 
+function renderVisitorFaces(count: number): void {
+  visitorFacesEl.innerHTML = "";
+  if (!Number.isFinite(count) || count <= 0) {
+    const placeholder = document.createElement("div");
+    placeholder.classList.add("visitorFacesEmpty");
+    placeholder.textContent = "(no visitors yet)";
+    visitorFacesEl.appendChild(placeholder);
+    return;
+  }
+
+  const faceCount = clamp(Math.round(count / 8), 3, 18);
+  for (let i = 0; i < faceCount; i++) {
+    const face = document.createElement("span");
+    face.classList.add("visitorFace");
+    face.title = `${count} visitors last week`;
+    visitorFacesEl.appendChild(face);
+  }
+}
+
 function showReceipt(message: string): void {
   if (!message) return;
   panelReceiptEl.textContent = message;
@@ -765,9 +821,34 @@ function renderHud(): void {
     const p = state.lastReport.prices.trees;
     priceEl.textContent = `D $${p.douglasFir} · F $${p.fraserFir}`;
     marketEl.textContent = `+$${state.lastReport.revenue.total} · ${state.lastReport.visitors} visitors · ${state.lastReport.treesSold} trees`;
+
+    const expected = state.lastReport.expectedVisitors;
+    const actual = state.lastReport.visitors;
+    visitorCountEl.textContent = `${actual}`;
+    visitorExpectedEl.textContent = `Expected ${expected.toFixed(0)}`;
+    visitorBarEl.setAttribute("aria-valuenow", `${actual}`);
+    visitorBarEl.setAttribute("aria-valuemax", `${Math.max(expected, actual)}`);
+    const fill = expected > 0 ? clamp(actual / expected, 0, 1.4) : 0;
+    visitorBarFillEl.style.transform = `scaleX(${fill})`;
+    renderVisitorFaces(actual);
+
+    if (previousVisitorCount !== actual) {
+      previousVisitorCount = actual;
+      visitorBadgeEl.classList.remove("isFresh");
+      window.requestAnimationFrame(() => {
+        visitorBadgeEl.classList.add("isFresh");
+      });
+    }
   } else {
     priceEl.textContent = "—";
     marketEl.textContent = "—";
+    visitorCountEl.textContent = "—";
+    visitorExpectedEl.textContent = "Waiting for first market week";
+    visitorBarEl.setAttribute("aria-valuenow", "0");
+    visitorBarEl.setAttribute("aria-valuemax", "0");
+    visitorBarFillEl.style.transform = "scaleX(0)";
+    previousVisitorCount = null;
+    renderVisitorFaces(0);
   }
 
   pauseBtn.textContent = state.running ? "Pause" : "Play";
