@@ -509,8 +509,8 @@ startCard.appendChild(startBtn);
 
 function beginGame(): void {
   startOverlay.classList.add("isHidden");
-  state.running = true;
-  pauseBtn.textContent = "Pause";
+  state.running = false;
+  pauseBtn.textContent = "Play";
   renderHud();
   updateWeekProgressUi();
   canvas.focus();
